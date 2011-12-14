@@ -22,7 +22,7 @@ from pygments.styles import get_style_by_name
 
 
 html_formatter = None
-
+css_filename = '_pygments.css'
 
 class CodeBlock(Directive):
     has_content = True
@@ -41,19 +41,20 @@ class CodeBlock(Directive):
 
 
 def inject_stylesheet(context, **kwargs):
-    context.add_stylesheet('_pygments.css')
+    context.add_stylesheet(css_filename)
 
 
 def write_stylesheet(builder, **kwargs):
-    with builder.open_static_file('_pygments.css', 'w') as f:
+    with builder.open_static_file(css_filename, 'w') as f:
         f.write(html_formatter.get_style_defs())
 
 
 def setup(builder):
-    global html_formatter
+    global html_formatter, css_filename
     style = get_style_by_name(builder.config.root_get('modules.pygments.style'))
     html_formatter = HtmlFormatter(style=style)
     directives.register_directive('code-block', CodeBlock)
     directives.register_directive('sourcecode', CodeBlock)
+    css_filename = builder.config.root_get('modules.pygments.css_filename', css_filename)
     before_file_processed.connect(inject_stylesheet)
     before_build_finished.connect(write_stylesheet)
